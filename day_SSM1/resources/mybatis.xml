@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-config.dtd" >
+<configuration>
+
+	<!-- 配置别名 -->
+	<typeAliases>
+		<!-- 如果指定包名,则该包下所有的类的别名就是累名 -->
+		<package name="com.lpc.ssm.entity"/>
+		<package name="com.lpc.ssm.mapper"/>
+	</typeAliases>
+	
+
+	<!-- 注册 -->
+	<mappers>
+		<mapper resource="com/lpc/ssm/mapper/UserDaoMapper.xml"/>
+	</mappers>
+
+</configuration>

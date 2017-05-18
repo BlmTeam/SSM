@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	   http://www.springframework.org/schema/beans/spring-beans-4.1.xsd 
+	   http://www.springframework.org/schema/context 
+	   http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	   http://www.springframework.org/schema/tx 
+	   http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+	   http://www.springframework.org/schema/aop 
+	   http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+	<!-- 
+	  classpath*:db.properties 到所有的classpath中寻找db.properties,包含classpath中的jar依赖包
+	  classpath:db.properties  到所有的classpath中寻找db.properties,"不"包含classpath中的jar依赖包
+	-->
+	<!-- 加载properties -->
+	<context:property-placeholder location="classpath:db.properties"/>
+	
+	<!-- 普通注解扫描 -->
+	<context:component-scan base-package="com.lpc.ssm"/>
+	
+	<!-- 配置事务管理器 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	<!-- 事务注解扫描 -->
+	<tx:annotation-driven transaction-manager="txManager"/>
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${driver}"/>
+		<property name="url" value="${url}"/>
+		<property name="username" value="${uname}"/>
+		<property name="password" value="${pwd}"/>
+		
+		<!-- 继续配置数据源的连接池特性 -->
+		<!-- 连接池启动时的初始值 -->
+		<property name="initialSize" value="1"/>
+		<!-- 连接池的最大值 -->
+		<property name="maxActive" value="500"/>
+		<!-- 最大空闲值.当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放一部分，一直减少到maxIdle为止 -->
+		<property name="maxIdle" value="2"/>
+		<!--  最小空闲值.当空闲的连接数少于阀值时，连接池就会预申请去一些连接，以免洪峰来时来不及申请 -->
+		<property name="minIdle" value="1"/>
+		<!-- maxWait:超时等待时间以毫秒为单位 -->
+		<property name="maxWait" value="10000"/>
+	</bean>
+
+	<!-- 往IOC容器中注入SqlSessionFactory,进而生成SqlSession -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		
+		<!-- 加载MyBatis的核心配置文件,间接加载Mapper映射文件 -->
+		<!-- <property name="configLocation" value="classpath:mybatis.xml"/> -->
+		
+		<!-- 直接加载Mapper映射文件 -->
+		<property name="mapperLocations" value="classpath:com/lpc/ssm/mapper/*Mapper.xml"/>
+		
+		<!-- 指定Mapper映射文件中使用的类名别名 -->
+		<property name="typeAliasesPackage" value="com.lpc.ssm.entity,com.lpc.ssm.mapper"/>
+	</bean>
+
+	<!-- 为Mybatis的各种接口映射自动生成实现类,重写方法的CRUD依据各个mapper配置文件,也可以在接口抽象方法上写注解实现CRUD ID可以省略-->
+	<bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		<!-- mapperInterface只能同时代理一个接口 -->
+		<property name="mapperInterface" value="com.lpc.ssm.mapper.UserDao" />
+	</bean>
+	
+	<!-- 扫描存储在相同包下的所有DAO模型的接口映射,自动生成实现类 - 推荐用这种 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 扫描多个包,用多个逗号隔开 -->
+		<property name="basePackage" value="com.lpc.ssm.mapper" />
+		<!-- 不用指定sqlSessionFactory的属性,会自动注入class为"org.mybatis.spring.SqlSessionFactoryBean"的bean;
+			  如果手动注入,则前面的JDBC连接特性要写成常量值,不能从db.properties中取获取,避免文件加载延迟出现的properties键值对不能架子啊的问题!  -->
+		<!-- <property name="sqlSessionFactory" ref="sqlSessionFactory" /> -->
+	</bean>
+
+
+
+
+</beans>
+
+
+
+
+

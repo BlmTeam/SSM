@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- mapper的namespace必须映射为UserDao接口的全路径,否则Spring不会为我们动态代理其实现类对象 - 自动代理 -->
+<mapper namespace="com.lpc.ssm.mapper.UserDao">
+  
+  
+  	<parameterMap type="java.util.Map" id="loginParam">
+  		<parameter property="name" javaType="string"/>
+  		<parameter property="pwd" javaType="string"/>
+  	</parameterMap>
+	<!-- 登录 id需要和接口里的方法名一致-->
+	<!-- <select id="login" parameterMap="loginParam" resultType="User">
+		select id,name,pwd from t_user where name = #{name} and pwd = #{pwd}
+	</select> -->
+	
+	<!-- 根据用户和密码查询 -->
+	<select id="login" parameterMap="loginParam" resultMap="userMap">
+		select id,name,pwd,dept_id from t_user where name = #{name} and pwd = #{pwd}
+	</select>
+	<resultMap type="User" id="userMap">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="pwd" column="pwd"/>
+		
+		<!-- manytoone 关联的一方 -->
+		<association property="dept" column="dept_id" select="com.lpc.ssm.mapper.DeptDao.getDeptId" />
+	</resultMap>
+	
+	<!-- 查询所有用户 -->
+	<select id="getAllUser" resultMap="allUserMap">
+		select u.id,u.name,u.pwd,d.id did,d.dept_name,d.create_time 
+		from t_user u
+		left join t_dept d
+		on u.dept_id = d.id
+	</select>
+	<resultMap type="User" id="allUserMap">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="pwd" column="pwd"/>
+		
+		<association property="dept" column="dept_id" javaType="Dept">
+			<id property="id" column="did"/>
+			<result property="dept_name" column="dept_name"/>
+			<result property="create_time" column="create_time"/>
+		</association>
+	</resultMap>
+  
+  	<!-- 添加用户 -->
+  	<insert id="addUser" parameterType="User"
+	  useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		insert into t_user(name,pwd,dept_id) values(#{name},#{pwd},#{dept.id})
+	</insert>
+	
+	<!-- 根据用户id查询用户信息 -->
+	<select id="getUser" parameterType="long" resultType="User">
+		select id,name,pwd,dept_id from t_user where id = #{id}
+	</select>
+	
+	<!-- 修改用户部门 -->
+	<!-- <update id="updateUser" parameterMap="updateUserMap" >
+		update t_user set dept_id = #{dept_id} where id = #{id}
+		update t_user set name=#{name},pwd=#{pwd},dept_id=#{dept_id} where id = #{id}
+	</update>
+	<parameterMap type="java.util.Map" id="updateUserMap">
+		<parameter property="dept_id" javaType="long"/>
+		<parameter property="id" javaType="long"/>
+	</parameterMap> -->
+	
+	<!-- 修改用户信息 -->
+	<update id="updateUser" parameterType="User">
+		update t_user set name=#{name},pwd=#{pwd},dept_id=#{dept.id} where id = #{id}
+	</update>
+	
+	<!-- 删除用户 -->
+	<delete id="deleteUser" parameterType="long">
+		delete from t_user where id = #{id}
+	</delete>
+  
+</mapper>

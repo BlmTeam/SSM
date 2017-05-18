@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- mapper的namespace必须映射为UserDao接口的全路径,否则Spring不会为我们动态代理其实现类对象 - 自动代理 -->
+<mapper namespace="com.lpc.ssm.mapper.DeptDao">
+  	
+	<!-- 根据某用户的部门ID查询所在部门的信息 -->
+	<select id="getDeptId" parameterType="long" resultType="Dept">
+		select id,dept_name,create_time from t_dept where id = #{id}
+	</select>
+	
+	<!-- 查询所有部门 -->
+	<select id="getAllDept" resultType="Dept">
+		select id,dept_name,create_time from t_dept
+	</select>
+	
+</mapper>
